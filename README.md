@@ -1,5 +1,5 @@
 ``` 😳 ```
-<a><img src="https://visitor-badge.laobi.icu/badge?page_id=paramudya.paramudya" /></a>
+<a><img src="https://visitor-badge.laobi.icu/badge?page_id=paramudya.noine" /></a>
 
 <!-- <div align="center">
   
