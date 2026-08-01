@@ -1,0 +1,34 @@
+name: Track Profile Views
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # daily at 03:00 UTC — GitHub only keeps 14 days of
+                          # traffic data, so don't go longer than that between runs
+  workflow_dispatch: {}   # lets you trigger it manually from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch traffic and update chart
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_TOKEN }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: node scripts/track-views.js
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/history.json data/chart.svg
+          git diff --cached --quiet || git commit -m "chore: update profile view history"
+          git push
