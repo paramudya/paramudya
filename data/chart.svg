@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300">
+  <style>
+    .title { font: 600 15px sans-serif; fill: #24292f; }
+    .subtitle { font: 400 12px sans-serif; fill: #57606a; }
+  </style>
+  <rect width="800" height="300" fill="#ffffff"/>
+  <text x="60" y="18" class="title">Profile Views Over Time</text>
+  <text x="770" y="18" class="subtitle" text-anchor="end">Total: 2</text>
+  <line x1="60" y1="250.0" x2="770" y2="250.0" stroke="#e5e5e5" stroke-width="1"/><text x="50" y="254.0" font-family="sans-serif" font-size="11" fill="#666" text-anchor="end">0</text><line x1="60" y1="140.0" x2="770" y2="140.0" stroke="#e5e5e5" stroke-width="1"/><text x="50" y="144.0" font-family="sans-serif" font-size="11" fill="#666" text-anchor="end">1</text><line x1="60" y1="140.0" x2="770" y2="140.0" stroke="#e5e5e5" stroke-width="1"/><text x="50" y="144.0" font-family="sans-serif" font-size="11" fill="#666" text-anchor="end">1</text><line x1="60" y1="30.0" x2="770" y2="30.0" stroke="#e5e5e5" stroke-width="1"/><text x="50" y="34.0" font-family="sans-serif" font-size="11" fill="#666" text-anchor="end">2</text><line x1="60" y1="30.0" x2="770" y2="30.0" stroke="#e5e5e5" stroke-width="1"/><text x="50" y="34.0" font-family="sans-serif" font-size="11" fill="#666" text-anchor="end">2</text>
+  <path d="M 60.0 250.0 L 114.6 250.0 L 169.2 250.0 L 223.8 250.0 L 278.5 250.0 L 333.1 250.0 L 387.7 250.0 L 442.3 250.0 L 496.9 250.0 L 551.5 140.0 L 606.2 140.0 L 660.8 140.0 L 715.4 140.0 L 770.0 30.0 L 770.0 250.0 L 60.0 250.0 Z" fill="#0969da" fill-opacity="0.08" stroke="none"/>
+  <path d="M 60.0 250.0 L 114.6 250.0 L 169.2 250.0 L 223.8 250.0 L 278.5 250.0 L 333.1 250.0 L 387.7 250.0 L 442.3 250.0 L 496.9 250.0 L 551.5 140.0 L 606.2 140.0 L 660.8 140.0 L 715.4 140.0 L 770.0 30.0" fill="none" stroke="#0969da" stroke-width="2.5"/>
+  <circle cx="60.0" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="114.6" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="169.2" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="223.8" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="278.5" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="333.1" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="387.7" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="442.3" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="496.9" cy="250.0" r="2.5" fill="#0969da"/>
+<circle cx="551.5" cy="140.0" r="2.5" fill="#0969da"/>
+<circle cx="606.2" cy="140.0" r="2.5" fill="#0969da"/>
+<circle cx="660.8" cy="140.0" r="2.5" fill="#0969da"/>
+<circle cx="715.4" cy="140.0" r="2.5" fill="#0969da"/>
+<circle cx="770.0" cy="30.0" r="2.5" fill="#0969da"/>
+  <text x="60.0" y="270" font-family="sans-serif" font-size="11" fill="#666" text-anchor="middle">07-18</text>
+
+
+<text x="223.8" y="270" font-family="sans-serif" font-size="11" fill="#666" text-anchor="middle">07-21</text>
+
+
+<text x="387.7" y="270" font-family="sans-serif" font-size="11" fill="#666" text-anchor="middle">07-24</text>
+
+
+<text x="551.5" y="270" font-family="sans-serif" font-size="11" fill="#666" text-anchor="middle">07-27</text>
+
+
+<text x="715.4" y="270" font-family="sans-serif" font-size="11" fill="#666" text-anchor="middle">07-30</text>
+<text x="770.0" y="270" font-family="sans-serif" font-size="11" fill="#666" text-anchor="middle">07-31</text>
+</svg>
