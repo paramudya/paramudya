@@ -59,7 +59,13 @@ function mergeHistory(existing, incoming) {
 }
 
 // ---- Smooth curve helper (Catmull-Rom -> cubic Bezier) ----
-function smoothPath(points) {
+// `floorY` is the y-coordinate of value 0 (the baseline). Since a cubic
+// Bezier curve always stays within the convex hull of its 4 control points,
+// clamping both control points to never exceed the baseline guarantees the
+// rendered curve can approach zero smoothly but never overshoots past it
+// into visually "negative" territory - even though the underlying spline
+// math would otherwise dip below zero right around low points near a spike.
+function smoothPath(points, floorY = Infinity) {
   if (points.length === 0) return '';
   if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
 
@@ -71,9 +77,9 @@ function smoothPath(points) {
     const p3 = points[i + 2] || p2;
 
     const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp1y = Math.min(p1.y + (p2.y - p0.y) / 6, floorY);
     const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    const cp2y = Math.min(p2.y - (p3.y - p1.y) / 6, floorY);
 
     d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
   }
@@ -132,7 +138,8 @@ function renderChart(history) {
 
   const points = history.map((d, i) => ({ x: xFor(i), y: yFor(d.count), date: d.date, count: d.count }));
 
-  const linePath = smoothPath(points);
+  const baselineY = PADDING.top + plotH; // y-coordinate of value 0
+  const linePath = smoothPath(points, baselineY);
   const areaPath = n > 1
     ? `${linePath} L ${points[n - 1].x.toFixed(1)} ${(PADDING.top + plotH).toFixed(1)} L ${points[0].x.toFixed(1)} ${(PADDING.top + plotH).toFixed(1)} Z`
     : '';
@@ -153,14 +160,23 @@ function renderChart(history) {
     .join('\n');
 
   // Only three reference lines: median, 75th percentile, and the top (max).
+  // If two of them round to the same value, their lines/labels would sit on
+  // top of each other - keep just one in priority order: Max > Median > P75.
   const sortedCounts = [...history.map((d) => d.count)].sort((a, b) => a - b);
   const median = percentile(sortedCounts, 50);
   const p75 = percentile(sortedCounts, 75);
-  const refLines = [
+  const candidates = [
+    { label: 'Max', value: maxCount },
     { label: 'Median', value: median },
     { label: 'P75', value: p75 },
-    { label: 'Max', value: maxCount },
   ];
+  const seenValues = new Set();
+  const refLines = candidates.filter((c) => {
+    const key = Math.round(c.value);
+    if (seenValues.has(key)) return false;
+    seenValues.add(key);
+    return true;
+  });
   const gridLines = refLines
     .map((r) => {
       const y = yFor(r.value);
