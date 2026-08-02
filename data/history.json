@@ -1,5 +1,17 @@
 [
   {
+    "date": "2021-10-31",
+    "count": 0,
+    "uniques": 0,
+    "commits": 17
+  },
+  {
+    "date": "2022-01-18",
+    "count": 0,
+    "uniques": 0,
+    "commits": 4
+  },
+  {
     "date": "2026-07-18",
     "count": 0,
     "uniques": 0,
@@ -82,5 +94,17 @@
     "count": 1,
     "uniques": 1,
     "commits": 0
+  },
+  {
+    "date": "2026-08-01",
+    "count": 0,
+    "uniques": 0,
+    "commits": 6
+  },
+  {
+    "date": "2026-08-02",
+    "count": 0,
+    "uniques": 0,
+    "commits": 3
   }
 ]
