@@ -1,13 +1,20 @@
 // track-views.js
 // Fetches daily profile-repo view counts from the GitHub Traffic API AND
-// daily commit counts from the GitHub commits list, appends both to a
-// persistent history file (Traffic API only keeps 14 days), and renders a
-// dual-axis SVG chart:
+// daily commit counts from GitHub's GraphQL contributionsCollection - the
+// same data source behind the profile's contribution-graph tile, so
+// commits are counted across EVERY repo you've contributed to (your own
+// repos and anyone else's), not just this one. Both are appended to a
+// persistent history file, and rendered as a dual-axis SVG chart:
 //   - LEFT axis / navy smooth line + area  = daily profile VIEWS ("Berapa tamu")
-//   - RIGHT axis / green background bars   = daily owner COMMITS ("Berapa commit")
-// Commits are drawn as bars behind the views line (not a second line) so the
-// two differently-scaled series never visually compete with each other -
-// the right-edge axis + matching bar color acts as the legend.
+//   - RIGHT axis / green background bars   = daily COMMITS across all repos ("Berapa commit")
+//
+// Views define the chart's date range. Commits only overlay onto dates that
+// already exist from views - so the x-axis always follows the views
+// history exactly, and commits outside that range are simply ignored.
+//
+// Commits are drawn as bars behind the views line (not a second line) so
+// the two differently-scaled series never visually compete - the
+// right-edge axis + matching bar color acts as the legend.
 //
 // The chart WIDTH grows as history grows (instead of squeezing points
 // together), so individual days stay distinguishable even after hundreds
@@ -16,8 +23,9 @@
 // to the width so they land back at a consistent apparent size on screen
 // no matter how long the history gets.
 //
-// Requires: Node.js 18+ (built-in fetch), a GH_TOKEN env var with repo scope,
-// and a GH_REPOSITORY env var in "owner/repo" form.
+// Requires: Node.js 18+ (built-in fetch), a GH_TOKEN env var with repo scope
+// (classic PAT also needs read:user for the GraphQL call), and a
+// GH_REPOSITORY env var in "owner/repo" form.
 
 const fs = require('fs');
 const path = require('path');
@@ -28,6 +36,8 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
 const CHART_FILE = path.join(DATA_DIR, 'chart.svg');
 
+const OWNER_LOGIN = REPO ? REPO.split('/')[0] : undefined;
+
 function ghHeaders() {
   return {
     Authorization: `Bearer ${TOKEN}`,
@@ -35,6 +45,8 @@ function ghHeaders() {
     'X-GitHub-Api-Version': '2022-11-28',
   };
 }
+
+// ---- Data fetching ----
 
 async function fetchTraffic() {
   const res = await fetch(`https://api.github.com/repos/${REPO}/traffic/views`, { headers: ghHeaders() });
@@ -44,42 +56,51 @@ async function fetchTraffic() {
   return res.json();
 }
 
-// Match what GitHub's own profile contribution graph counts: a commit only
-// counts if it's authored by the account owner (attributed via their linked
-// GitHub login) on the repo's default branch - which the commits list
-// endpoint already returns by default.
-const OWNER_LOGIN = REPO ? REPO.split('/')[0] : undefined;
-
-async function fetchOwnerCommits() {
-  const commits = [];
-  let page = 1;
-  while (page <= 20) { // safety cap: 20 pages * 100 = 2000 commits
-    const res = await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=100&page=${page}`, { headers: ghHeaders() });
-    if (!res.ok) {
-      console.warn(`Commits API error ${res.status}, skipping commit data this run.`);
-      return [];
+// The REST commits API only sees ONE repo. To match what the profile tile
+// actually shows - commits across EVERY repo you've contributed to, yours
+// or anyone else's - we use GitHub's GraphQL contributionsCollection,
+// which is the literal data source behind the green squares.
+async function fetchCommitContributions(fromISO, toISO) {
+  const query = `query($login: String!, $from: DateTime!, $to: DateTime!) {
+    user(login: $login) {
+      contributionsCollection(from: $from, to: $to) {
+        commitContributionsByRepository(maxRepositories: 100) {
+          contributions(first: 100) {
+            nodes { commitCount occurredAt }
+          }
+        }
+      }
     }
-    const batch = await res.json();
-    if (batch.length === 0) break;
-    commits.push(...batch);
-    if (batch.length < 100) break;
-    page++;
+  }`;
+  const res = await fetch('https://api.github.com/graphql', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, variables: { login: OWNER_LOGIN, from: fromISO, to: toISO } }),
+  });
+  if (!res.ok) {
+    console.warn(`GraphQL contributions error ${res.status}, skipping commit data this run.`);
+    return new Map();
   }
-  return commits;
-}
-
-// Bucket commits by author-date (UTC), keeping only ones attributed to the
-// repo owner's own GitHub account - same rule the profile tile uses.
-function commitsToDailyMap(commits) {
+  const json = await res.json();
+  if (json.errors) {
+    console.warn('GraphQL errors, skipping commit data this run:', JSON.stringify(json.errors));
+    return new Map();
+  }
   const map = new Map();
-  for (const c of commits) {
-    if (c.author?.login !== OWNER_LOGIN) continue;
-    const dateStr = (c.commit?.author?.date || c.commit?.committer?.date || '').slice(0, 10);
-    if (!dateStr) continue;
-    map.set(dateStr, (map.get(dateStr) || 0) + 1);
+  const repos = json.data?.user?.contributionsCollection?.commitContributionsByRepository || [];
+  for (const repo of repos) {
+    for (const node of repo.contributions.nodes) {
+      const dateStr = node.occurredAt.slice(0, 10);
+      map.set(dateStr, (map.get(dateStr) || 0) + node.commitCount);
+    }
   }
   return map;
 }
+
+// ---- History storage / merging ----
 
 function loadHistory() {
   if (!fs.existsSync(HISTORY_FILE)) return [];
@@ -91,7 +112,11 @@ function loadHistory() {
 }
 
 function mergeHistory(existing, incomingTraffic, commitDailyMap = new Map()) {
-  const byDate = new Map(existing.map((d) => [d.date, d]));
+  // Only carry over previously-saved entries that had real view data - a
+  // commit-only entry (count 0) could only exist from an older version of
+  // this script that inserted out-of-range dates, so dropping those here
+  // self-heals any leftover stray entries automatically.
+  const byDate = new Map(existing.filter((d) => d.count > 0).map((d) => [d.date, d]));
   for (const v of incomingTraffic.views) {
     const date = v.timestamp.slice(0, 10); // YYYY-MM-DD
     const prev = byDate.get(date);
@@ -99,24 +124,21 @@ function mergeHistory(existing, incomingTraffic, commitDailyMap = new Map()) {
       byDate.set(date, { date, count: v.count, uniques: v.uniques, commits: prev?.commits ?? 0 });
     }
   }
-  // Overlay/insert commit counts for every date the commits list covers -
-  // including dates that don't have a views entry yet (Traffic API lags
-  // 24-48h behind, so "today's" commits would otherwise be silently
-  // dropped if we only attached commits to already-existing view dates).
-  for (const [date, commitCount] of commitDailyMap) {
-    if (byDate.has(date)) {
-      byDate.get(date).commits = commitCount;
-    } else {
-      byDate.set(date, { date, count: 0, uniques: 0, commits: commitCount });
-    }
-  }
+  // Views define the date range. Commits only overlay onto dates that
+  // already exist from views - never insert new dates outside that range,
+  // so the chart's x-axis always follows the views history exactly.
   for (const entry of byDate.values()) {
-    if (entry.commits === undefined) entry.commits = 0;
+    entry.commits = commitDailyMap.get(entry.date) ?? entry.commits ?? 0;
   }
   return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
 // ---- Smooth curve helper (Catmull-Rom -> cubic Bezier) ----
+// `floorY` is the y-coordinate of value 0 (the baseline). Since a cubic
+// Bezier curve always stays within the convex hull of its 4 control points,
+// clamping both control points to never exceed the baseline guarantees the
+// rendered curve can approach zero smoothly but never overshoots past it
+// into visually "negative" territory.
 function smoothPath(points, floorY = Infinity) {
   if (points.length === 0) return '';
   if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
@@ -148,10 +170,13 @@ function percentile(sortedArr, p) {
   return sortedArr[lo] + (sortedArr[hi] - sortedArr[lo]) * frac;
 }
 
-// ---- Chart sizing ----
+// ---- Chart rendering ----
+
 const HEIGHT = 300;
+// Right padding is wider than the others to make room for the commit axis
+// (rotated "Berapa commit" label + its max-value tick).
 const BASE_PADDING = { top: 30, right: 70, bottom: 50, left: 60 };
-const MIN_WIDTH = 800;
+const MIN_WIDTH = 800;   // also the "baseline" width font-scaling is relative to
 const MAX_WIDTH = 6000;
 const PX_PER_POINT = 5;
 
@@ -172,7 +197,12 @@ function renderChart(history) {
 
   const n = history.length;
   const width = computeWidth(n);
-  const fontScale = width / MIN_WIDTH;
+
+  // Pre-inflate text/stroke sizes by how much wider than baseline we are, so
+  // that after the browser scales the whole image back down to fit a
+  // README's column width, everything lands back at a consistent apparent
+  // size instead of shrinking as history grows.
+  const fontScale = width / MIN_WIDTH; // always >= 1
 
   const PADDING = {
     top: BASE_PADDING.top * fontScale,
@@ -193,8 +223,9 @@ function renderChart(history) {
   const yForScaled = (v, maxVal) => PADDING.top + plotH - (v / maxVal) * plotH;
   const yFor = (v) => yForScaled(v, maxCount);
   const yForCommits = (v) => yForScaled(v, maxCommits);
-  const baselineY = PADDING.top + plotH;
+  const baselineY = PADDING.top + plotH; // y-coordinate of value 0 (shared by both axes)
 
+  // ---- Commit bars (right axis, drawn first so they sit behind the line) ----
   const slot = n > 1 ? plotW / (n - 1) : plotW;
   const commitBarWidth = Math.max(1, Math.min(slot * 0.5, 8 * fontScale));
   const commitBars = history
@@ -208,6 +239,7 @@ function renderChart(history) {
     })
     .join('\n');
 
+  // ---- Views line (left axis) ----
   const points = history.map((d, i) => ({ x: xFor(i), y: yFor(d.count), date: d.date, count: d.count }));
   const linePath = smoothPath(points, baselineY);
   const areaPath = n > 1
@@ -229,6 +261,9 @@ function renderChart(history) {
       : ''))
     .join('\n');
 
+  // Left-axis reference lines: median, 75th percentile, and max of VIEWS.
+  // If two round to the same value their lines/labels would sit on top of
+  // each other - keep just one in priority order: Max > Median > P75.
   const sortedCounts = [...history.map((d) => d.count)].sort((a, b) => a - b);
   const median = percentile(sortedCounts, 50);
   const p75 = percentile(sortedCounts, 75);
@@ -252,6 +287,8 @@ function renderChart(history) {
     })
     .join('\n');
 
+  // Right-axis (commits): a rotated title along the edge, plus a single
+  // "Max" tick near the top so the bar scale has a concrete reference.
   const rightAxisX = (width - PADDING.right + 14 * fontScale).toFixed(1);
   const rightAxisTitle = `<text x="${rightAxisX}" y="${(PADDING.top + plotH / 2).toFixed(1)}" font-family="sans-serif" font-size="${axisFont}" fill="${COMMITS_COLOR}" text-anchor="middle" transform="rotate(-90 ${rightAxisX} ${(PADDING.top + plotH / 2).toFixed(1)})">Berapa commit</text>`;
   const rightAxisMaxTick = `<text x="${(width - PADDING.right + 6 * fontScale).toFixed(1)}" y="${(PADDING.top + 4 * fontScale).toFixed(1)}" font-family="sans-serif" font-size="${axisFont}" fill="${COMMITS_COLOR}" text-anchor="start">Max ${maxCommits}</text>`;
@@ -274,14 +311,29 @@ function renderChart(history) {
 </svg>`;
 }
 
+// ---- Entry point ----
+
 async function main() {
   if (!TOKEN || !REPO) {
     console.error('Missing GH_TOKEN or GH_REPOSITORY environment variable.');
     process.exit(1);
   }
-  const [traffic, commits] = await Promise.all([fetchTraffic(), fetchOwnerCommits()]);
-  const commitDailyMap = commitsToDailyMap(commits);
   const existing = loadHistory();
+
+  // Scope the GraphQL query window to roughly the views history's range, so
+  // we're not asking for more than we'll actually use (commits outside the
+  // views date range get ignored by mergeHistory anyway). Falls back to the
+  // last 30 days on a first-ever run with no existing history yet.
+  const earliestDate = existing.length > 0 ? existing[0].date : null;
+  const fallbackSince = new Date();
+  fallbackSince.setUTCDate(fallbackSince.getUTCDate() - 30);
+  const sinceISO = earliestDate ? `${earliestDate}T00:00:00Z` : fallbackSince.toISOString();
+  const toISO = new Date().toISOString();
+
+  const [traffic, commitDailyMap] = await Promise.all([
+    fetchTraffic(),
+    fetchCommitContributions(sinceISO, toISO),
+  ]);
   const merged = mergeHistory(existing, traffic, commitDailyMap);
 
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -295,7 +347,7 @@ async function main() {
 }
 
 module.exports = {
-  mergeHistory, loadHistory, renderChart, computeWidth, smoothPath, percentile, commitsToDailyMap,
+  mergeHistory, loadHistory, renderChart, computeWidth, smoothPath, percentile,
 };
 
 if (require.main === module) {
