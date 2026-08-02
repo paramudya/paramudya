@@ -6,4 +6,3 @@
  -->
 
 ![Profile views over time](./data/chart.svg)
-``` 😳 ```
