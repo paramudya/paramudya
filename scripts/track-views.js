@@ -1,8 +1,13 @@
 // track-views.js
-// Fetches daily profile-repo view counts from the GitHub Traffic API,
-// appends them to a persistent history file (since GitHub only keeps 14 days),
-// and renders a smooth, transparent-background SVG line chart of daily
-// views over time.
+// Fetches daily profile-repo view counts from the GitHub Traffic API AND
+// daily commit counts from the GitHub commits list, appends both to a
+// persistent history file (Traffic API only keeps 14 days), and renders a
+// dual-axis SVG chart:
+//   - LEFT axis / navy smooth line + area  = daily profile VIEWS ("Berapa tamu")
+//   - RIGHT axis / green background bars   = daily owner COMMITS ("Berapa commit")
+// Commits are drawn as bars behind the views line (not a second line) so the
+// two differently-scaled series never visually compete with each other -
+// the right-edge axis + matching bar color acts as the legend.
 //
 // The chart WIDTH grows as history grows (instead of squeezing points
 // together), so individual days stay distinguishable even after hundreds
@@ -23,18 +28,59 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
 const CHART_FILE = path.join(DATA_DIR, 'chart.svg');
 
+function ghHeaders() {
+  return {
+    Authorization: `Bearer ${TOKEN}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+}
+
 async function fetchTraffic() {
-  const res = await fetch(`https://api.github.com/repos/${REPO}/traffic/views`, {
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
-  });
+  const res = await fetch(`https://api.github.com/repos/${REPO}/traffic/views`, { headers: ghHeaders() });
   if (!res.ok) {
-    throw new Error(`GitHub API error ${res.status}: ${await res.text()}`);
+    throw new Error(`GitHub Traffic API error ${res.status}: ${await res.text()}`);
   }
   return res.json();
+}
+
+// Match what GitHub's own profile contribution graph counts: a commit only
+// counts if it's authored by the account owner (attributed via their linked
+// GitHub login) on the repo's default branch - which the commits list
+// endpoint already returns by default. This naturally excludes the bot
+// (its login isn't yours) and anyone else's commits too, without needing a
+// separate bot-name check.
+const OWNER_LOGIN = REPO ? REPO.split('/')[0] : undefined;
+
+async function fetchOwnerCommits() {
+  const commits = [];
+  let page = 1;
+  while (page <= 20) { // safety cap: 20 pages * 100 = 2000 commits
+    const res = await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=100&page=${page}`, { headers: ghHeaders() });
+    if (!res.ok) {
+      console.warn(`Commits API error ${res.status}, skipping commit data this run.`);
+      return [];
+    }
+    const batch = await res.json();
+    if (batch.length === 0) break;
+    commits.push(...batch);
+    if (batch.length < 100) break;
+    page++;
+  }
+  return commits;
+}
+
+// Bucket commits by author-date (UTC), keeping only ones attributed to the
+// repo owner's own GitHub account - same rule the profile tile uses.
+function commitsToDailyMap(commits) {
+  const map = new Map();
+  for (const c of commits) {
+    if (c.author?.login !== OWNER_LOGIN) continue;
+    const dateStr = (c.commit?.author?.date || c.commit?.committer?.date || '').slice(0, 10);
+    if (!dateStr) continue;
+    map.set(dateStr, (map.get(dateStr) || 0) + 1);
+  }
+  return map;
 }
 
 function loadHistory() {
@@ -46,25 +92,26 @@ function loadHistory() {
   }
 }
 
-function mergeHistory(existing, incoming) {
+function mergeHistory(existing, incomingTraffic, commitDailyMap = new Map()) {
   const byDate = new Map(existing.map((d) => [d.date, d]));
-  for (const v of incoming.views) {
+  for (const v of incomingTraffic.views) {
     const date = v.timestamp.slice(0, 10); // YYYY-MM-DD
     const prev = byDate.get(date);
     if (!prev || v.count > prev.count) {
-      byDate.set(date, { date, count: v.count, uniques: v.uniques });
+      byDate.set(date, { date, count: v.count, uniques: v.uniques, commits: prev?.commits ?? 0 });
+    }
+  }
+  for (const [date, entry] of byDate) {
+    if (commitDailyMap.has(date)) {
+      entry.commits = commitDailyMap.get(date);
+    } else if (entry.commits === undefined) {
+      entry.commits = 0;
     }
   }
   return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
 // ---- Smooth curve helper (Catmull-Rom -> cubic Bezier) ----
-// `floorY` is the y-coordinate of value 0 (the baseline). Since a cubic
-// Bezier curve always stays within the convex hull of its 4 control points,
-// clamping both control points to never exceed the baseline guarantees the
-// rendered curve can approach zero smoothly but never overshoots past it
-// into visually "negative" territory - even though the underlying spline
-// math would otherwise dip below zero right around low points near a spike.
 function smoothPath(points, floorY = Infinity) {
   if (points.length === 0) return '';
   if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
@@ -98,10 +145,13 @@ function percentile(sortedArr, p) {
 
 // ---- Chart sizing ----
 const HEIGHT = 300;
-const BASE_PADDING = { top: 30, right: 30, bottom: 50, left: 60 };
-const MIN_WIDTH = 800;   // also the "baseline" width font-scaling is relative to
+const BASE_PADDING = { top: 30, right: 70, bottom: 50, left: 60 };
+const MIN_WIDTH = 800;
 const MAX_WIDTH = 6000;
 const PX_PER_POINT = 5;
+
+const VIEWS_COLOR = '#1F3958';
+const COMMITS_COLOR = '#216e39'; // GitHub's own contribution-graph green
 
 function computeWidth(n) {
   const target = BASE_PADDING.left + BASE_PADDING.right + n * PX_PER_POINT;
@@ -117,8 +167,7 @@ function renderChart(history) {
 
   const n = history.length;
   const width = computeWidth(n);
-
-  const fontScale = width / MIN_WIDTH; // always >= 1
+  const fontScale = width / MIN_WIDTH;
 
   const PADDING = {
     top: BASE_PADDING.top * fontScale,
@@ -131,23 +180,39 @@ function renderChart(history) {
   const svgHeight = HEIGHT * fontScale;
 
   const maxCount = Math.max(...history.map((d) => d.count), 1);
+  const maxCommits = Math.max(...history.map((d) => d.commits || 0), 1);
   const totalViews = history.reduce((s, d) => s + d.count, 0);
+  const totalCommits = history.reduce((s, d) => s + (d.commits || 0), 0);
 
   const xFor = (i) => PADDING.left + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
-  const yFor = (v) => PADDING.top + plotH - (v / maxCount) * plotH;
+  const yForScaled = (v, maxVal) => PADDING.top + plotH - (v / maxVal) * plotH;
+  const yFor = (v) => yForScaled(v, maxCount);
+  const yForCommits = (v) => yForScaled(v, maxCommits);
+  const baselineY = PADDING.top + plotH;
+
+  const slot = n > 1 ? plotW / (n - 1) : plotW;
+  const commitBarWidth = Math.max(1, Math.min(slot * 0.5, 8 * fontScale));
+  const commitBars = history
+    .map((d, i) => {
+      const val = d.commits || 0;
+      if (val === 0) return '';
+      const x = xFor(i);
+      const yTop = yForCommits(val);
+      const h = Math.max(0.5, baselineY - yTop);
+      return `<rect x="${(x - commitBarWidth / 2).toFixed(1)}" y="${yTop.toFixed(1)}" width="${commitBarWidth.toFixed(1)}" height="${h.toFixed(1)}" fill="${COMMITS_COLOR}" fill-opacity="0.55"><title>${d.date}: ${val} commit${val === 1 ? '' : 's'}</title></rect>`;
+    })
+    .join('\n');
 
   const points = history.map((d, i) => ({ x: xFor(i), y: yFor(d.count), date: d.date, count: d.count }));
-
-  const baselineY = PADDING.top + plotH; // y-coordinate of value 0
   const linePath = smoothPath(points, baselineY);
   const areaPath = n > 1
-    ? `${linePath} L ${points[n - 1].x.toFixed(1)} ${(PADDING.top + plotH).toFixed(1)} L ${points[0].x.toFixed(1)} ${(PADDING.top + plotH).toFixed(1)} Z`
+    ? `${linePath} L ${points[n - 1].x.toFixed(1)} ${baselineY.toFixed(1)} L ${points[0].x.toFixed(1)} ${baselineY.toFixed(1)} Z`
     : '';
 
   const showDots = n <= 120;
   const dotR = 2.5 * fontScale;
   const dots = showDots
-    ? points.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${dotR.toFixed(1)}" fill="#1F3958"><title>${p.date}: ${p.count} views</title></circle>`).join('\n')
+    ? points.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${dotR.toFixed(1)}" fill="${VIEWS_COLOR}"><title>${p.date}: ${p.count} views</title></circle>`).join('\n')
     : '';
 
   const maxLabels = Math.max(4, Math.floor(width / (80 * fontScale)));
@@ -159,9 +224,6 @@ function renderChart(history) {
       : ''))
     .join('\n');
 
-  // Only three reference lines: median, 75th percentile, and the top (max).
-  // If two of them round to the same value, their lines/labels would sit on
-  // top of each other - keep just one in priority order: Max > Median > P75.
   const sortedCounts = [...history.map((d) => d.count)].sort((a, b) => a - b);
   const median = percentile(sortedCounts, 50);
   const p75 = percentile(sortedCounts, 75);
@@ -185,18 +247,25 @@ function renderChart(history) {
     })
     .join('\n');
 
+  const rightAxisX = (width - PADDING.right + 14 * fontScale).toFixed(1);
+  const rightAxisTitle = `<text x="${rightAxisX}" y="${(PADDING.top + plotH / 2).toFixed(1)}" font-family="sans-serif" font-size="${axisFont}" fill="${COMMITS_COLOR}" text-anchor="middle" transform="rotate(-90 ${rightAxisX} ${(PADDING.top + plotH / 2).toFixed(1)})">Berapa commit</text>`;
+  const rightAxisMaxTick = `<text x="${(width - PADDING.right + 6 * fontScale).toFixed(1)}" y="${(PADDING.top + 4 * fontScale).toFixed(1)}" font-family="sans-serif" font-size="${axisFont}" fill="${COMMITS_COLOR}" text-anchor="start">Max ${maxCommits}</text>`;
+
   const titleFont = (15 * fontScale).toFixed(1);
   const subtitleFont = (12 * fontScale).toFixed(1);
   const strokeWidth = (2.5 * fontScale).toFixed(2);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${svgHeight.toFixed(1)}" viewBox="0 0 ${width} ${svgHeight.toFixed(1)}">
-  <text x="${PADDING.left.toFixed(1)}" y="${(18 * fontScale).toFixed(1)}" font-family="sans-serif" font-weight="600" font-size="${titleFont}" fill="#24292f">Berapa tamu</text>
-  <text x="${(width - PADDING.right).toFixed(1)}" y="${(18 * fontScale).toFixed(1)}" font-family="sans-serif" font-size="${subtitleFont}" fill="#57606a" text-anchor="end">Total: ${totalViews.toLocaleString()} · ${n} days tracked</text>
+  <text x="${PADDING.left.toFixed(1)}" y="${(18 * fontScale).toFixed(1)}" font-family="sans-serif" font-weight="600" font-size="${titleFont}" fill="${VIEWS_COLOR}">Berapa tamu</text>
+  <text x="${(width - PADDING.right).toFixed(1)}" y="${(18 * fontScale).toFixed(1)}" font-family="sans-serif" font-size="${subtitleFont}" fill="#57606a" text-anchor="end">Views ${totalViews.toLocaleString()} · Commits ${totalCommits.toLocaleString()} · ${n} days</text>
   ${gridLines}
-  ${areaPath ? `<path d="${areaPath}" fill="#1F3958" fill-opacity="0.08" stroke="none"/>` : ''}
-  <path d="${linePath}" fill="none" stroke="#1F3958" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>
+  ${commitBars}
+  ${areaPath ? `<path d="${areaPath}" fill="${VIEWS_COLOR}" fill-opacity="0.08" stroke="none"/>` : ''}
+  <path d="${linePath}" fill="none" stroke="${VIEWS_COLOR}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>
   ${dots}
   ${xLabels}
+  ${rightAxisMaxTick}
+  ${rightAxisTitle}
 </svg>`;
 }
 
@@ -205,9 +274,10 @@ async function main() {
     console.error('Missing GH_TOKEN or GH_REPOSITORY environment variable.');
     process.exit(1);
   }
-  const traffic = await fetchTraffic();
+  const [traffic, commits] = await Promise.all([fetchTraffic(), fetchOwnerCommits()]);
+  const commitDailyMap = commitsToDailyMap(commits);
   const existing = loadHistory();
-  const merged = mergeHistory(existing, traffic);
+  const merged = mergeHistory(existing, traffic, commitDailyMap);
 
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(HISTORY_FILE, JSON.stringify(merged, null, 2));
@@ -216,9 +286,12 @@ async function main() {
   console.log(`History now has ${merged.length} daily entries.`);
   console.log(`Chart width: ${computeWidth(merged.length)}px`);
   console.log(`Total views recorded: ${merged.reduce((s, d) => s + d.count, 0)}`);
+  console.log(`Total commits recorded: ${merged.reduce((s, d) => s + (d.commits || 0), 0)}`);
 }
 
-module.exports = { mergeHistory, loadHistory, renderChart, computeWidth, smoothPath, percentile };
+module.exports = {
+  mergeHistory, loadHistory, renderChart, computeWidth, smoothPath, percentile, commitsToDailyMap,
+};
 
 if (require.main === module) {
   main().catch((err) => {
