@@ -334,6 +334,9 @@ async function main() {
     fetchTraffic(),
     fetchCommitContributions(sinceISO, toISO),
   ]);
+  console.log('DEBUG sinceISO:', sinceISO, 'toISO:', toISO);
+  console.log('DEBUG commitDailyMap size:', commitDailyMap.size);
+  console.log('DEBUG commitDailyMap entries:', [...commitDailyMap.entries()]);
   const merged = mergeHistory(existing, traffic, commitDailyMap);
 
   fs.mkdirSync(DATA_DIR, { recursive: true });
