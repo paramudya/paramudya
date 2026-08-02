@@ -275,6 +275,10 @@ async function main() {
     process.exit(1);
   }
   const [traffic, commits] = await Promise.all([fetchTraffic(), fetchOwnerCommits()]);
+  console.log('DEBUG OWNER_LOGIN:', OWNER_LOGIN);
+  console.log('DEBUG fetched commits count:', commits.length);
+  console.log('DEBUG sample commit logins:', commits.slice(0, 5).map((c) => c.author?.login));
+  
   const commitDailyMap = commitsToDailyMap(commits);
   const existing = loadHistory();
   const merged = mergeHistory(existing, traffic, commitDailyMap);
