@@ -47,9 +47,7 @@ async function fetchTraffic() {
 // Match what GitHub's own profile contribution graph counts: a commit only
 // counts if it's authored by the account owner (attributed via their linked
 // GitHub login) on the repo's default branch - which the commits list
-// endpoint already returns by default. This naturally excludes the bot
-// (its login isn't yours) and anyone else's commits too, without needing a
-// separate bot-name check.
+// endpoint already returns by default.
 const OWNER_LOGIN = REPO ? REPO.split('/')[0] : undefined;
 
 async function fetchOwnerCommits() {
@@ -101,12 +99,19 @@ function mergeHistory(existing, incomingTraffic, commitDailyMap = new Map()) {
       byDate.set(date, { date, count: v.count, uniques: v.uniques, commits: prev?.commits ?? 0 });
     }
   }
-  for (const [date, entry] of byDate) {
-    if (commitDailyMap.has(date)) {
-      entry.commits = commitDailyMap.get(date);
-    } else if (entry.commits === undefined) {
-      entry.commits = 0;
+  // Overlay/insert commit counts for every date the commits list covers -
+  // including dates that don't have a views entry yet (Traffic API lags
+  // 24-48h behind, so "today's" commits would otherwise be silently
+  // dropped if we only attached commits to already-existing view dates).
+  for (const [date, commitCount] of commitDailyMap) {
+    if (byDate.has(date)) {
+      byDate.get(date).commits = commitCount;
+    } else {
+      byDate.set(date, { date, count: 0, uniques: 0, commits: commitCount });
     }
+  }
+  for (const entry of byDate.values()) {
+    if (entry.commits === undefined) entry.commits = 0;
   }
   return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
@@ -275,10 +280,6 @@ async function main() {
     process.exit(1);
   }
   const [traffic, commits] = await Promise.all([fetchTraffic(), fetchOwnerCommits()]);
-  console.log('DEBUG OWNER_LOGIN:', OWNER_LOGIN);
-  console.log('DEBUG fetched commits count:', commits.length);
-  console.log('DEBUG sample commit logins:', commits.slice(0, 5).map((c) => c.author?.login));
-  
   const commitDailyMap = commitsToDailyMap(commits);
   const existing = loadHistory();
   const merged = mergeHistory(existing, traffic, commitDailyMap);
