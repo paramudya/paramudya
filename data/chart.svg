@@ -1,10 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="300.0" viewBox="0 0 800 300.0">
   <text x="60.0" y="18.0" font-family="sans-serif" font-weight="600" font-size="15.0" fill="#1F3958">Berapa tamu</text>
-  <text x="730.0" y="18.0" font-family="sans-serif" font-size="12.0" fill="#57606a" text-anchor="end">Views 2 · Commits 0 · 14 days</text>
+  <text x="730.0" y="18.0" font-family="sans-serif" font-size="12.0" fill="#57606a" text-anchor="end">Views 2 · Commits 4 · 14 days</text>
   <line x1="60" y1="30.0" x2="730" y2="30.0" stroke="#cfd6dc" stroke-width="1.00" stroke-dasharray="4.0 3.0"/><text x="50.0" y="34.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="end">Max 1</text>
 <line x1="60" y1="250.0" x2="730" y2="250.0" stroke="#cfd6dc" stroke-width="1.00" stroke-dasharray="4.0 3.0"/><text x="50.0" y="254.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="end">Median 0</text>
   
 
+<rect x="159.1" y="30.0" width="8.0" height="220.0" fill="#216e39" fill-opacity="0.55"><title>2026-07-20: 2 commits</title></rect>
 
 
 
@@ -13,8 +14,7 @@
 
 
 
-
-
+<rect x="622.9" y="30.0" width="8.0" height="220.0" fill="#216e39" fill-opacity="0.55"><title>2026-07-29: 2 commits</title></rect>
 
 
   <path d="M 60.0 250.0 C 68.6 250.0, 94.4 250.0, 111.5 250.0 C 128.7 250.0, 145.9 250.0, 163.1 250.0 C 180.3 250.0, 197.4 250.0, 214.6 250.0 C 231.8 250.0, 249.0 250.0, 266.2 250.0 C 283.3 250.0, 300.5 250.0, 317.7 250.0 C 334.9 250.0, 352.1 250.0, 369.2 250.0 C 386.4 250.0, 403.6 250.0, 420.8 250.0 C 437.9 250.0, 455.1 250.0, 472.3 250.0 C 489.5 213.3, 506.7 30.0, 523.8 30.0 C 541.0 30.0, 558.2 213.3, 575.4 250.0 C 592.6 250.0, 609.7 250.0, 626.9 250.0 C 644.1 250.0, 661.3 250.0, 678.5 250.0 C 695.6 213.3, 721.4 66.7, 730.0 30.0 L 730.0 250.0 L 60.0 250.0 Z" fill="#1F3958" fill-opacity="0.08" stroke="none"/>
@@ -47,6 +47,6 @@
 
 <text x="678.5" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">07-30</text>
 <text x="730.0" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">07-31</text>
-  <text x="736.0" y="34.0" font-family="sans-serif" font-size="11.0" fill="#216e39" text-anchor="start">Max 1</text>
+  <text x="736.0" y="34.0" font-family="sans-serif" font-size="11.0" fill="#216e39" text-anchor="start">Max 2</text>
   <text x="744.0" y="140.0" font-family="sans-serif" font-size="11.0" fill="#216e39" text-anchor="middle" transform="rotate(-90 744.0 140.0)">Berapa commit</text>
 </svg>
