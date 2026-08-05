@@ -1,23 +1,5 @@
 [
   {
-    "date": "2026-07-18",
-    "count": 0,
-    "uniques": 0,
-    "commits": 0
-  },
-  {
-    "date": "2026-07-19",
-    "count": 0,
-    "uniques": 0,
-    "commits": 0
-  },
-  {
-    "date": "2026-07-20",
-    "count": 0,
-    "uniques": 0,
-    "commits": 2
-  },
-  {
     "date": "2026-07-21",
     "count": 0,
     "uniques": 0,
@@ -79,6 +61,24 @@
   },
   {
     "date": "2026-07-31",
+    "count": 1,
+    "uniques": 1,
+    "commits": 0
+  },
+  {
+    "date": "2026-08-01",
+    "count": 60,
+    "uniques": 1,
+    "commits": 6
+  },
+  {
+    "date": "2026-08-02",
+    "count": 86,
+    "uniques": 1,
+    "commits": 6
+  },
+  {
+    "date": "2026-08-03",
     "count": 1,
     "uniques": 1,
     "commits": 0
