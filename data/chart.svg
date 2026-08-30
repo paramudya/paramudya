@@ -23,46 +23,46 @@
 
 
 
-  <path d="M 60.0 247.4 C 66.2 247.4, 84.8 250.0, 97.2 247.4 C 109.6 222.3, 122.0 132.8, 134.4 96.5 C 146.9 60.3, 159.3 4.8, 171.7 30.0 C 184.1 55.2, 196.5 210.8, 208.9 247.4 C 221.3 250.0, 233.7 249.6, 246.1 250.0 C 258.5 250.0, 270.9 250.0, 283.3 250.0 C 295.7 250.0, 308.1 250.0, 320.6 250.0 C 333.0 249.6, 345.4 247.4, 357.8 247.4 C 370.2 247.4, 382.6 249.6, 395.0 250.0 C 407.4 250.0, 419.8 250.0, 432.2 250.0 C 444.6 250.0, 457.0 250.0, 469.4 250.0 C 481.9 250.0, 494.3 250.0, 506.7 250.0 C 519.1 250.0, 531.5 250.0, 543.9 250.0 C 556.3 250.0, 568.7 250.0, 581.1 250.0 C 593.5 250.0, 605.9 250.0, 618.3 250.0 C 630.7 250.0, 643.1 250.0, 655.6 250.0 C 668.0 250.0, 680.4 250.0, 692.8 250.0 C 705.2 250.0, 723.8 250.0, 730.0 250.0 L 730.0 250.0 L 60.0 250.0 Z" fill="#1F3958" fill-opacity="0.08" stroke="none"/>
-  <path d="M 60.0 247.4 C 66.2 247.4, 84.8 250.0, 97.2 247.4 C 109.6 222.3, 122.0 132.8, 134.4 96.5 C 146.9 60.3, 159.3 4.8, 171.7 30.0 C 184.1 55.2, 196.5 210.8, 208.9 247.4 C 221.3 250.0, 233.7 249.6, 246.1 250.0 C 258.5 250.0, 270.9 250.0, 283.3 250.0 C 295.7 250.0, 308.1 250.0, 320.6 250.0 C 333.0 249.6, 345.4 247.4, 357.8 247.4 C 370.2 247.4, 382.6 249.6, 395.0 250.0 C 407.4 250.0, 419.8 250.0, 432.2 250.0 C 444.6 250.0, 457.0 250.0, 469.4 250.0 C 481.9 250.0, 494.3 250.0, 506.7 250.0 C 519.1 250.0, 531.5 250.0, 543.9 250.0 C 556.3 250.0, 568.7 250.0, 581.1 250.0 C 593.5 250.0, 605.9 250.0, 618.3 250.0 C 630.7 250.0, 643.1 250.0, 655.6 250.0 C 668.0 250.0, 680.4 250.0, 692.8 250.0 C 705.2 250.0, 723.8 250.0, 730.0 250.0" fill="none" stroke="#1F3958" stroke-width="2.50" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 60.0 247.4 C 66.2 247.4, 84.8 250.0, 97.2 247.4 C 109.6 222.3, 122.0 132.8, 134.4 96.5 C 146.9 60.3, 159.3 4.8, 171.7 30.0 C 184.1 55.2, 196.5 210.8, 208.9 247.4 C 221.3 250.0, 233.7 250.0, 246.1 250.0 C 258.5 250.0, 270.9 247.4, 283.3 247.4 C 295.7 247.4, 308.1 249.6, 320.6 250.0 C 333.0 250.0, 345.4 250.0, 357.8 250.0 C 370.2 250.0, 382.6 250.0, 395.0 250.0 C 407.4 250.0, 419.8 250.0, 432.2 250.0 C 444.6 250.0, 457.0 250.0, 469.4 250.0 C 481.9 250.0, 494.3 250.0, 506.7 250.0 C 519.1 250.0, 531.5 250.0, 543.9 250.0 C 556.3 250.0, 568.7 250.0, 581.1 250.0 C 593.5 250.0, 605.9 250.0, 618.3 250.0 C 630.7 250.0, 643.1 250.0, 655.6 250.0 C 668.0 250.0, 680.4 250.0, 692.8 250.0 C 705.2 250.0, 723.8 250.0, 730.0 250.0 L 730.0 250.0 L 60.0 250.0 Z" fill="#1F3958" fill-opacity="0.08" stroke="none"/>
+  <path d="M 60.0 247.4 C 66.2 247.4, 84.8 250.0, 97.2 247.4 C 109.6 222.3, 122.0 132.8, 134.4 96.5 C 146.9 60.3, 159.3 4.8, 171.7 30.0 C 184.1 55.2, 196.5 210.8, 208.9 247.4 C 221.3 250.0, 233.7 250.0, 246.1 250.0 C 258.5 250.0, 270.9 247.4, 283.3 247.4 C 295.7 247.4, 308.1 249.6, 320.6 250.0 C 333.0 250.0, 345.4 250.0, 357.8 250.0 C 370.2 250.0, 382.6 250.0, 395.0 250.0 C 407.4 250.0, 419.8 250.0, 432.2 250.0 C 444.6 250.0, 457.0 250.0, 469.4 250.0 C 481.9 250.0, 494.3 250.0, 506.7 250.0 C 519.1 250.0, 531.5 250.0, 543.9 250.0 C 556.3 250.0, 568.7 250.0, 581.1 250.0 C 593.5 250.0, 605.9 250.0, 618.3 250.0 C 630.7 250.0, 643.1 250.0, 655.6 250.0 C 668.0 250.0, 680.4 250.0, 692.8 250.0 C 705.2 250.0, 723.8 250.0, 730.0 250.0" fill="none" stroke="#1F3958" stroke-width="2.50" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="60.0" cy="247.4" r="2.5" fill="#1F3958"><title>2026-07-27: 1 views</title></circle>
 <circle cx="97.2" cy="247.4" r="2.5" fill="#1F3958"><title>2026-07-31: 1 views</title></circle>
 <circle cx="134.4" cy="96.5" r="2.5" fill="#1F3958"><title>2026-08-01: 60 views</title></circle>
 <circle cx="171.7" cy="30.0" r="2.5" fill="#1F3958"><title>2026-08-02: 86 views</title></circle>
 <circle cx="208.9" cy="247.4" r="2.5" fill="#1F3958"><title>2026-08-03: 1 views</title></circle>
-<circle cx="246.1" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-14: 0 views</title></circle>
-<circle cx="283.3" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-15: 0 views</title></circle>
-<circle cx="320.6" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-16: 0 views</title></circle>
-<circle cx="357.8" cy="247.4" r="2.5" fill="#1F3958"><title>2026-08-17: 1 views</title></circle>
-<circle cx="395.0" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-18: 0 views</title></circle>
-<circle cx="432.2" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-19: 0 views</title></circle>
-<circle cx="469.4" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-20: 0 views</title></circle>
-<circle cx="506.7" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-21: 0 views</title></circle>
-<circle cx="543.9" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-22: 0 views</title></circle>
-<circle cx="581.1" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-23: 0 views</title></circle>
-<circle cx="618.3" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-24: 0 views</title></circle>
-<circle cx="655.6" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-25: 0 views</title></circle>
-<circle cx="692.8" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-26: 0 views</title></circle>
-<circle cx="730.0" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-27: 0 views</title></circle>
+<circle cx="246.1" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-16: 0 views</title></circle>
+<circle cx="283.3" cy="247.4" r="2.5" fill="#1F3958"><title>2026-08-17: 1 views</title></circle>
+<circle cx="320.6" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-18: 0 views</title></circle>
+<circle cx="357.8" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-19: 0 views</title></circle>
+<circle cx="395.0" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-20: 0 views</title></circle>
+<circle cx="432.2" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-21: 0 views</title></circle>
+<circle cx="469.4" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-22: 0 views</title></circle>
+<circle cx="506.7" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-23: 0 views</title></circle>
+<circle cx="543.9" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-24: 0 views</title></circle>
+<circle cx="581.1" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-25: 0 views</title></circle>
+<circle cx="618.3" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-26: 0 views</title></circle>
+<circle cx="655.6" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-27: 0 views</title></circle>
+<circle cx="692.8" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-28: 0 views</title></circle>
+<circle cx="730.0" cy="250.0" r="2.5" fill="#1F3958"><title>2026-08-29: 0 views</title></circle>
   <text x="60.0" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">07-27</text>
 
 <text x="134.4" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-01</text>
 
 <text x="208.9" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-03</text>
 
-<text x="283.3" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-15</text>
+<text x="283.3" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-17</text>
 
-<text x="357.8" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-17</text>
+<text x="357.8" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-19</text>
 
-<text x="432.2" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-19</text>
+<text x="432.2" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-21</text>
 
-<text x="506.7" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-21</text>
+<text x="506.7" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-23</text>
 
-<text x="581.1" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-23</text>
+<text x="581.1" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-25</text>
 
-<text x="655.6" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-25</text>
+<text x="655.6" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-27</text>
 
-<text x="730.0" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-27</text>
+<text x="730.0" y="270.0" font-family="sans-serif" font-size="11.0" fill="#666" text-anchor="middle">08-29</text>
   <text x="736.0" y="34.0" font-family="sans-serif" font-size="11.0" fill="#216e39" text-anchor="start">Max 6</text>
   <text x="744.0" y="140.0" font-family="sans-serif" font-size="11.0" fill="#216e39" text-anchor="middle" transform="rotate(-90 744.0 140.0)">Berapa commit</text>
 </svg>
