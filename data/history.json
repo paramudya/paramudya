@@ -30,12 +30,6 @@
     "commits": 0
   },
   {
-    "date": "2026-08-16",
-    "count": 0,
-    "uniques": 0,
-    "commits": 0
-  },
-  {
     "date": "2026-08-17",
     "count": 1,
     "uniques": 1,
@@ -109,6 +103,12 @@
   },
   {
     "date": "2026-08-29",
+    "count": 0,
+    "uniques": 0,
+    "commits": 0
+  },
+  {
+    "date": "2026-08-30",
     "count": 0,
     "uniques": 0,
     "commits": 0
