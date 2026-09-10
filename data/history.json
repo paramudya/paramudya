@@ -36,18 +36,6 @@
     "commits": 0
   },
   {
-    "date": "2026-08-25",
-    "count": 0,
-    "uniques": 0,
-    "commits": 0
-  },
-  {
-    "date": "2026-08-26",
-    "count": 0,
-    "uniques": 0,
-    "commits": 0
-  },
-  {
     "date": "2026-08-27",
     "count": 0,
     "uniques": 0,
@@ -118,5 +106,17 @@
     "count": 0,
     "uniques": 0,
     "commits": 0
+  },
+  {
+    "date": "2026-09-08",
+    "count": 0,
+    "uniques": 0,
+    "commits": 6
+  },
+  {
+    "date": "2026-09-09",
+    "count": 0,
+    "uniques": 0,
+    "commits": 5
   }
 ]
